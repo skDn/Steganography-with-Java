@@ -250,7 +250,24 @@ public class FileReader {
      * 32 bits used to represent the size
      */
     private void populateSizeBits() {
+    	int size =  getFileSize();
 
+    	boolean[] bits = toBinary(size, 32);
+    	for(int bit = 0 ; bit <32; bit++){
+    		if(bits[bit]= true)
+    			sbits.add(1);
+    		else{
+    			sbits.add(0);
+    		}
+    	}
+    }
+    	
+    private static boolean[] toBinary(int number, int base) {
+        final boolean[] ret = new boolean[base];
+        for (int i = 0; i < base; i++) {
+            ret[base - 1 - i] = (1 << i & number) != 0;
+        }
+        return ret;
     }
 
     //TODO YOU MUST FILL IN THIS METHOD
@@ -260,8 +277,35 @@ public class FileReader {
      * 64 bits used to represent the extension
      */
     private void populateExtensionBits() {
-
+    	
+    	 String extension = getExtension();
+    	 try {
+			byte[] bytes = extension.getBytes("UTF-8"); // 8-bit encoding ; 
+			// convert to bits  8x8 = 64 bits 
+			boolean[]  bits =	byteArray2BitArray(bytes);
+			//populate the array
+			for(int bit = 0 ; bit <64; bit++){
+	    		if(bits[bit]= true)
+	    			extBits.add(1);
+	    		else{
+	    			extBits.add(0);
+	    		}
+			}
+		 }
+    	 catch (UnsupportedEncodingException e) {
+		
+			e.printStackTrace();
+		}
     }
+    
+    public static boolean[] byteArray2BitArray(byte[] bytes) {
+        boolean[] bits = new boolean[bytes.length * 8];
+        for (int i = 0; i < bytes.length * 8; i++) {
+          if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
+            bits[i] = true;
+        }
+        return bits;
+      }
 
 
     /**
