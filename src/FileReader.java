@@ -40,11 +40,11 @@ public class FileReader {
     /**
      * List to hold the bits which represent the size of the file
      */
-    private List<Integer> sbits;
+    private List<Integer> sbits = new ArrayList<Integer>(32);;
     /**
      * List to hold the bits representing the extension
      */
-    private List<Integer> extBits = new ArrayList<Integer>();
+    private List<Integer> extBits=new ArrayList<Integer>(64); ;
 
     /**
      * iterators for the lists which hold the bits relating to the size and extension
@@ -112,7 +112,8 @@ public class FileReader {
         //set up the string
         String ext = "";
         //find the position of the .
-        int pos = fileName.lastIndexOf('.');
+       // System.out.println(fileName);
+        int pos = fileName.lastIndexOf(".");
 
         //now create a substring from the . to the end
         ext = fileName.substring(pos);
@@ -253,6 +254,7 @@ public class FileReader {
     	int size =  getFileSize();
 
     	boolean[] bits = toBinary(size, 32);
+  
     	for(int bit = 0 ; bit <32; bit++){
     		if(bits[bit]= true)
     			sbits.add(1);
@@ -279,12 +281,18 @@ public class FileReader {
     private void populateExtensionBits() {
     	
     	 String extension = getExtension();
+    	
     	 try {
-			byte[] bytes = extension.getBytes("UTF-8"); // 8-bit encoding ; 
+			byte[] bytes = extension.getBytes("UTF-8"); // 8-bit encoding ;
+			System.out.println(bytes.length);
 			// convert to bits  8x8 = 64 bits 
 			boolean[]  bits =	byteArray2BitArray(bytes);
+			if(bits.length > 64){
+				System.out.println("the extension is too big to fit in a 64 bit array");
+				return;
+			}
 			//populate the array
-			for(int bit = 0 ; bit <64; bit++){
+			for(int bit = 0 ; bit <bytes.length*8; bit++){
 	    		if(bits[bit]= true)
 	    			extBits.add(1);
 	    		else{
