@@ -3,6 +3,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 
 class Steg {
@@ -243,9 +245,10 @@ class Steg {
 			int i = imageDataBitsLenght;
 			for (; i < imageDataBitsLenght + sizeBitsLength; i++) {
 				length = retrieveBitFromImage(image, length, i);
-			    System.out.println(length);
-				
+			    System.out.println(length);	
 			}
+		
+
 
 			return new byte[10];
 		}
@@ -254,6 +257,8 @@ class Steg {
 			result = (result << 1) | (image[i] & 1);
 			return result;
 		}
+		
+	
 		
 
 
