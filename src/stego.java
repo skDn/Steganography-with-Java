@@ -241,11 +241,24 @@ class Steg {
 		
 		private byte[] decodeHiddenFile(byte[] image) {
 			int length = 0;
-			//loop through 54 to 86 bytes of data to determine text length
-			int i = imageDataBitsLenght;
-			for (; i < imageDataBitsLenght + sizeBitsLength; i++) {
-				length = retrieveBitFromImage(image, length, i);
-			    System.out.println(length);	
+			int extension= 0;
+			try {
+				//loop through 54 to 86 bytes of data to determine text length
+				int i = imageDataBitsLenght;
+				for (; i < imageDataBitsLenght + sizeBitsLength; i++) 
+					length = retrieveBitFromImage(image, length, i);
+				System.out.println("The File bit size is " + length);
+				
+				//get the extension of the file
+			 	for (; i < imageDataBitsLenght + sizeBitsLength+extBitsLength; i++) 
+			 		extension = retrieveBitFromImage(image, extension, i);   	
+			 	byte[]  byteExtensionArray= ByteBuffer.allocate(8).putInt(extension).array();
+				String extensionStr = new String(byteExtensionArray, "UTF-8");
+				System.out.println("The File's extension is :  "+ extensionStr);
+			
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		
 
