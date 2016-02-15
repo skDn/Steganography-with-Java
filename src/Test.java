@@ -12,6 +12,7 @@ public class Test {
         
 
         st.hideFile("Test.txt", "image.bmp");
+        st.extractFile("image.bmp");
      
         
     }

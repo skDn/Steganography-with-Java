@@ -175,7 +175,17 @@ class Steg {
 		 * result of the successful extraction process
 		 */
 		public String extractFile(String stego_image) {
-			return "test";
+			byte[] decode;
+			byte[] imageBytes;
+
+			try {
+				BufferedImage img = getBufferedImage(stego_image);
+				imageBytes = getByteArrayFromBufferedImage(img);
+				decode = decodeHiddenFile(imageBytes);
+				return (new String(decode));
+			} catch (Exception e) {
+				return "";
+			}
 
 		}
 
@@ -213,7 +223,7 @@ class Steg {
 			for (; i < imageDataBitsLenght + sizeBitsLength; i++) {
 				length = retrieveBitFromImage(image, length, i);
 			}
-
+	
 			byte[] result = new byte[length];
 
 			//loop through each byte of text
@@ -226,11 +236,25 @@ class Steg {
 			}
 			return result;
 		}
+		
+		private byte[] decodeHiddenFile(byte[] image) {
+			int length = 0;
+			//loop through 54 to 86 bytes of data to determine text length
+			int i = imageDataBitsLenght;
+			for (; i < imageDataBitsLenght + sizeBitsLength; i++) {
+				length = retrieveBitFromImage(image, length, i);
+			    System.out.println(length);
+				
+			}
+
+			return new byte[10];
+		}
 
 		private int retrieveBitFromImage(byte[] image, int result, int i) {
 			result = (result << 1) | (image[i] & 1);
 			return result;
 		}
+		
 
 
 	}
