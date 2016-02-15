@@ -7,9 +7,11 @@ public class Test {
         Steg st = new Steg();
         String testImage = "image.bmp";
         st.hideString("Hello. My name is Steganography. Test me out.", testImage);
-        FileReader myfileReader = new FileReader(testImage);
         testImage = testImage.replaceFirst("[.][^.]+$", "");
         System.out.println(st.extractString(testImage + "-modified" + fileExtension));
+        
+
+        st.hideFile("Test.txt", "image.bmp");
      
         
     }
