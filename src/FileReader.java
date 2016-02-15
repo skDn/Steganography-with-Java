@@ -44,7 +44,7 @@ public class FileReader {
     /**
      * List to hold the bits representing the extension
      */
-    private List<Integer> extBits=new ArrayList<Integer>(64); ;
+    private List<Integer> extBits=new ArrayList<Integer>(Collections.nCopies(64, 0)); ;
 
     /**
      * iterators for the lists which hold the bits relating to the size and extension
@@ -290,16 +290,17 @@ public class FileReader {
 			if(bits.length > 64){
 				System.out.println("the extension is too big to fit in a 64 bit array");
 				return;
+			
 			}
+	
 			//populate the array
-			for(int bit = 0 ; bit <bytes.length*8; bit++){
-	    		if(bits[bit]= true)
-	    			extBits.add(1);
-	    		else{
-	    			extBits.add(0);
-	    		}
+			for(int bit = 0 ; bit <bits.length; bit++){
+	    		if(bits[bit]== true)
+	    			extBits.set(64-bits.length+bit, 1);
 			}
+			//System.out.println(extBits.toString());
 		 }
+    	 
     	 catch (UnsupportedEncodingException e) {
 		
 			e.printStackTrace();
