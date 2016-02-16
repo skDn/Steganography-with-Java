@@ -183,10 +183,10 @@ class Steg {
 			try {
 				BufferedImage img = getBufferedImage(stego_image);
 				imageBytes = getByteArrayFromBufferedImage(img);
-				decode = decodeHiddenFile(imageBytes);
+				decode = decodeHiddenFile(imageBytes,stego_image);
 				return (new String(decode));
 			} catch (Exception e) {
-				return "";
+				return "Fail";
 			}
 
 		}
@@ -239,7 +239,7 @@ class Steg {
 			return result;
 		}
 		
-		private byte[] decodeHiddenFile(byte[] image) {
+		private byte[] decodeHiddenFile(byte[] image, String nameFile) {
 			int length = 0;
 			int extension= 0;
 			try {
@@ -253,10 +253,41 @@ class Steg {
 			 	for (; i < imageDataBitsLenght + sizeBitsLength+extBitsLength; i++) 
 			 		extension = retrieveBitFromImage(image, extension, i);   	
 			 	byte[]  byteExtensionArray= ByteBuffer.allocate(8).putInt(extension).array();
-				String extensionStr = new String(byteExtensionArray, "UTF-8");
-				System.out.println("The File's extension is :  "+ extensionStr);
+				String fileExtension = new String(byteExtensionArray, "UTF-8");
+				System.out.println("The File's extension is :"+ fileExtension);
+				
+				byte[] result = new byte[length];
+
+				//loop through each byte of text
+				for (int j = 0; j < result.length; j++) {
+					//loop through each bit within a byte of text
+					for (int bit = 0; bit < byteLength; bit++, i++) {
+						//assign bit: [(new byte value) << 1] OR [(text byte) AND 1]
+						result[j] = (byte) retrieveBitFromImage(image, result[j], i);
+					}
+				}
+				
+			  
+			String current_dir =	System.getProperty("user.dir");
+			String  fileName= "outFile"+ fileExtension;
+			System.out.println(fileName);
+			File File = new File(current_dir, fileName);
+		//	System.out.println(path);
+			
+			if(!File.exists()) File.createNewFile();
+			
+			FileOutputStream fos = new FileOutputStream(File);
+			fos.write(result);
+			fos.close();
+				
 			
 			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
