@@ -5,16 +5,17 @@ public class Test {
     public static void main(String[] args) {
 
         Steg st = new Steg();
-        String testImage = "image.bmp";
-        st.hideString("Hello. My name is Steganography. Test me out.", testImage);
-        testImage = testImage.replaceFirst("[.][^.]+$", "");
-        System.out.println(st.extractString(testImage + "-modified" + fileExtension));
-        
+//        String testImage = "image.bmp";
+//        st.hideString("", testImage);
+//        testImage = testImage.replaceFirst("[.][^.]+$", "");
+//        System.out.println(st.extractString(testImage + "-modified" + fileExtension));
+
 
         st.hideFile("Test.txt", "image.bmp");
         st.extractFile("image-modified.bmp");
-     
-        
+        st.hideFile("outFile.txt", "image.bmp");
+
+
     }
 
     public static int byteToInt(byte[] bytes, int length) {
