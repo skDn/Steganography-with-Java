@@ -6,17 +6,17 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 
 class Steg {
 
 
+    public static final String CHARSET_NAME = "UTF-8";
     /**
      * A constant to hold the number of bits per byte
      */
     private final int byteLength = 8;
-
-    private int count = 0;
 
     /**
      * A constant to hold the number of bits used to store the size of the file extracted
@@ -63,7 +63,7 @@ class Steg {
             imageBytes = getByteArrayFromBufferedImage(img);
 
             if ((payloadBytes.length + sizeBitsLength + imageDataBitsLenght) > imageBytes.length) {
-                throw new IllegalArgumentException("File not long enough!");
+                throw new IllegalArgumentException("String is too long to be encoded!");
             }
 
             // swap 32 bits after the first 54 with the size of the string
@@ -71,9 +71,7 @@ class Steg {
             for (int j = 0; i < imageDataBitsLenght + sizeBitsLength; i++, j++) {
                 imageBytes[i] = (byte) swapLsb(stringSize[j], imageBytes[i]);
             }
-            for (int j = 0; j < payloadBytes.length; j++) {
-                int biteToAdd = payloadBytes[j];
-
+            for (byte biteToAdd : payloadBytes) {
                 for (int bit = byteLength - 1; bit >= 0; bit--, i++) {
                     int b = getBitWithIndex(biteToAdd, bit);
                     imageBytes[i] = (byte) swapLsb(b, imageBytes[i]);
@@ -84,9 +82,11 @@ class Steg {
             createImageFileFromBufferedImage(img, filename);
             return filename;
 
-
+        } catch (IllegalArgumentException e) {
+            return "Fail: " + e.getMessage();
         } catch (IOException e) {
-            return "Fail";
+            return "Fail: either the image does not exits or the generated image cannot be " +
+                    "written to disk.";
         }
     }
 
@@ -121,8 +121,8 @@ class Steg {
             imageBytes = getByteArrayFromBufferedImage(img);
             decode = decodeHiddenString(imageBytes);
             return (new String(decode));
-        } catch (Exception e) {
-            return "";
+        } catch (IOException e) {
+            return "Fail: Image does not exist.";
         }
 
     }
@@ -145,52 +145,17 @@ class Steg {
     public String hideFile(String file_payload, String cover_image) {
 
         try {
-            //cover_image
-//            BufferedImage img = getBufferedImage(cover_image);
-//            byte[] imageBytes = getByteArrayFromBufferedImage(img);
-//
-//            FileReader reader = new FileReader(file_payload);
-//            int nextBit;
-//            int fileSize = reader.getFileSize();
-//            List<Integer> fileSizeBits = reader.getSizeBits();
-//            List<Integer> fileExtBits = reader.getExtBits();
-//
-//            System.out.println("fileReadBits size is " + fileSizeBits.size());
-//            System.out.println("fileExtBits size is " + fileExtBits.size());
-//
-//
-//            if ((fileSize + sizeBitsLength + imageDataBitsLenght) > imageBytes.length) {
-//                throw new IllegalArgumentException("File not long enough!");
-//            }
-//
-//            // swap 32 bits after the first 54 with the size of the string
-//            int i = imageDataBitsLenght;
-//            int j;
-//            for (j = 0; i < imageDataBitsLenght + sizeBitsLength; i++, j++) {
-//                imageBytes[i] = (byte) swapLsb(fileSizeBits.get(j), imageBytes[i]);
-//            }
-//
-//            for (j = 0; i < imageDataBitsLenght + sizeBitsLength + extBitsLength; i++, j++) {
-//                imageBytes[i] = (byte) swapLsb(fileExtBits.get(j), imageBytes[i]);
-//            }
-//
-//            while (reader.hasNextBit()) {
-//                nextBit = reader.getNextBit();
-//                imageBytes[i] = (byte) swapLsb(nextBit, imageBytes[i]);
-//                i++;
-//            }
-//            String filename = generateFileName(cover_image);
-//            createImageFileFromBufferedImage(img, filename);
-//
-//            return filename;
-
             BufferedImage img = getBufferedImage(cover_image);
             byte[] imageBytes = getByteArrayFromBufferedImage(img);
 
+            // instantiating fileReader that is going to read the file and returns its bits.
             FileReader reader = new FileReader(file_payload);
             int nextBit;
             int i = imageDataBitsLenght;
-
+            if (imageBytes.length < imageDataBitsLenght + reader.getFileSize() + extBitsLength + sizeBitsLength) {
+                return "Fail: file is too big to be encoded";
+            }
+            // getting all the bits of the file and encoding them to the image
             while (reader.hasNextBit()) {
                 nextBit = reader.getNextBit();
                 imageBytes[i] = (byte) swapLsb(nextBit, imageBytes[i]);
@@ -198,11 +163,11 @@ class Steg {
             }
             String filename = generateFileName(cover_image);
             createImageFileFromBufferedImage(img, filename);
-
             return filename;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Fail";
+
+        } catch (IOException e) {
+            return "Fail: either the image does not exits or the generated image cannot be " +
+                    "written to disk.";
         }
 
     }
@@ -223,14 +188,67 @@ class Steg {
         try {
             BufferedImage img = getBufferedImage(stego_image);
             imageBytes = getByteArrayFromBufferedImage(img);
-            decodeHiddenFile(imageBytes, stego_image);
-//				return (new String(decode));
-            return "success";
 
-        } catch (Exception e) {
-            return "Fail";
+            int fileBitsSize = 0;
+            try {
+                //loop through 54 to 86 bytes of data to determine file bits length
+                int i = imageDataBitsLenght;
+                for (; i < imageDataBitsLenght + sizeBitsLength; i++)
+                    fileBitsSize = retrieveBitFromImage(imageBytes, fileBitsSize, i);
+
+                //get the extension of the file
+                byte[] extensionArr = new byte[extBitsLength / byteLength];
+                for (int j = 0; i < imageDataBitsLenght + sizeBitsLength + extBitsLength; j++) {
+                    for (int bit = 0; bit < byteLength; bit++, i++) {
+                        //assign bit: [(new byte value) << 1] OR [(text byte) AND 1]
+                        extensionArr[j] = (byte) retrieveBitFromImage(imageBytes, extensionArr[j], i);
+                    }
+                }
+                // remove 0 bytes
+                byte[] finalExtension = trimByteArray(extensionArr);
+                // getting the string representation of the extension
+                String fileExtension = new String(finalExtension, CHARSET_NAME);
+
+                // instantiating a byte array to hold the file
+                decode = new byte[fileBitsSize / byteLength];
+                // i = i - 1 so that our first extracted bit aligns with
+                // the 96th bit of the image
+                i = i - 1;
+                //loop through each byte of the image
+                for (int j = 0; j < decode.length; j++) {
+                    //loop through each bit within a byte of text
+                    //file reader returns the bits in reverse order so we need to switch them back
+                    i += byteLength;
+                    for (int bit = 0; bit < byteLength; bit++, i--) {
+                        //assign bit: [(new byte value) << 1] OR [(text byte) AND 1]
+                        decode[j] = (byte) retrieveBitFromImage(imageBytes, decode[j], i);
+                    }
+                    i += byteLength;
+                }
+                return writeDecodedFile(stego_image, decode, fileExtension);
+
+
+            } catch (UnsupportedEncodingException e) {
+                return "Fail: could not convert the byte array using " + CHARSET_NAME + " encoding.";
+            } catch (FileNotFoundException e) {
+                return "Fail: could not write the decoded file to disk.";
+            }
+        } catch (IOException e) {
+            return "Fail: the is no such bmp file.";
         }
+    }
 
+    private String writeDecodedFile(String stego_image, byte[] decode, String fileExtension) throws IOException {
+        String fileName;// getting directory
+        String current_dir = System.getProperty("user.dir");
+
+        fileName = "decodedFileFrom" + fileExtension;
+
+        // writing the output file.
+        FileOutputStream fos = new FileOutputStream(current_dir + "/" + fileName);
+        fos.write(decode);
+        fos.close();
+        return fileName;
     }
 
     //TODO you must write this method
@@ -242,9 +260,11 @@ class Steg {
      * @param byt       - the current byte
      * @return the altered byte
      */
+
     public int swapLsb(int bitToHide, int byt) {
         return ((byt >> 1) << 1) | bitToHide;
     }
+
 
     private byte[] getByteArrayFromBufferedImage(BufferedImage image) {
         WritableRaster raster = image.getRaster();
@@ -281,87 +301,25 @@ class Steg {
         return result;
     }
 
-    private void decodeHiddenFile(byte[] image, String nameFile) {
-        int length = 0;
-        int extension = 0;
-        try {
-            //loop through 54 to 86 bytes of data to determine text length
-            int i = imageDataBitsLenght;
-            for (; i < imageDataBitsLenght + sizeBitsLength; i++)
-                length = retrieveBitFromImage(image, length, i);
-//            System.out.println("The File bit size is " + length);
-
-            //get the extension of the file
-            for (; i < imageDataBitsLenght + sizeBitsLength + extBitsLength; i++)
-                extension = retrieveBitFromImage(image, extension, i);
-
-            // refactor not to use BigInteger
-            byte[] extByte = BigInteger.valueOf(extension).toByteArray();
-
-            String fileExtension = new String(extByte, "UTF-8");
-            System.out.println("The File's extension is :" + fileExtension);
-
-            byte[] result = new byte[length / byteLength];
-//            System.out.println(length);
-            //loop through each byte of text
-            System.out.println(i);
-            i = i - 1;
-            for (int j = 0; j < result.length; j++) {
-                //loop through each bit within a byte of text
-                System.out.println("loop");
-                i += byteLength;
-                for (int bit = 0; bit < byteLength; bit++, i--) {
-                    //assign bit: [(new byte value) << 1] OR [(text byte) AND 1]
-                    result[j] = (byte) retrieveBitFromImage(image, result[j], i);
-                }
-                i += byteLength;
-            }
-
-
-            String current_dir = System.getProperty("user.dir");
-            String fileName = "outFile" + fileExtension;
-//            System.out.println(fileName);
-//            System.out.println(current_dir);
-//            File file = new File(current_dir, fileName);
-//
-//
-//            if (!file.exists()) file.createNewFile();
-//
-//            FileOutputStream fos = new FileOutputStream(file);
-//            fos.write(result);
-//            fos.close();
-            FileOutputStream fos = new FileOutputStream(current_dir + "/" + fileName);
-            fos.write(result);
-            fos.close();
-
-
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-
-//			return new byte[10];
-    }
 
     private int retrieveBitFromImage(byte[] image, int result, int i) {
-
-
-        if (count >= 96) {
-            if (count % 8 == 0)
-                System.out.println();
-            System.out.print(image[i] & 1);
-        }
-        count++;
         result = (result << 1) | (image[i] & 1);
         return result;
     }
 
-
+    private byte[] trimByteArray(byte[] bytes) {
+        int start = 0;
+        for (byte b : bytes) {
+            if (b != 0) {
+                break;
+            }
+            start++;
+        }
+        byte[] retByteArr = new byte[bytes.length - start];
+        for (int i = 0; i < retByteArr.length; i++) {
+            retByteArr[i] = bytes[start];
+            start++;
+        }
+        return retByteArr;
+    }
 }

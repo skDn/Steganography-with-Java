@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Scanner;
+
 public class Test {
 
     protected static String fileExtension = ".bmp";
@@ -5,39 +9,53 @@ public class Test {
     public static void main(String[] args) {
 
         Steg st = new Steg();
-//        String testImage = "image.bmp";
+        String testImage = "image.bmp";
 //        st.hideString("", testImage);
 //        testImage = testImage.replaceFirst("[.][^.]+$", "");
 //        System.out.println(st.extractString(testImage + "-modified" + fileExtension));
 
-
-        st.hideFile("Test.txt", "image.bmp");
-        st.extractFile("image-modified.bmp");
-        st.hideFile("outFile.txt", "image.bmp");
+        System.out.println(st.hideFile("Cyber.iml", "marbles.bmp"));
+        st.extractFile("marbles-modified.bmp");
+//        st.hideFile("outFile.abcdefg", "image.bmp");
 
 
     }
 
-    public static int byteToInt(byte[] bytes, int length) {
-        int val = 0;
-        if (length > 4) throw new RuntimeException("Too big to fit in int");
-        for (int i = 0; i < length; i++) {
-            val = val << 8;
-            val = val | (bytes[i] & 0xFF);
+
+    /*
+    public static void main(String args[]) throws IOException {
+
+        int userInput = -1;
+        String fileToUse;
+        String fileToEncode;
+        Scanner inputReader = new Scanner(System.in);
+
+        do {
+
+            System.out.println("Enter your choice of command: ");
+            //Getting input in int format
+            userInput = inputReader.nextInt();
+
+            switch (userInput) {
+                case 1:
+                    System.out.println("hello");
+                    break;
+                case 2:
+                    System.out.println("Enter the bmp file you want to use: ");
+                    fileToUse = inputReader.nextLine();
+                    System.out.println("Enter the String you want to encode: ");
+                    fileToUse = inputReader.nextLine();
+
+            }
+
         }
-        return val;
+
+        while (userInput!=0);
+
+
+
     }
+*/
 
-    private static int[] getStringSizeToIntArray(String message) {
-
-        int[] size = new int[32];
-        int stringLenght = message.length();
-        for (int i = 32 - 1, j = 0; i >= 0; i--, j++) {
-            size[i] = (stringLenght >> j) & 1;
-//            System.out.println(size[i]);
-        }
-
-        return size;
-    }
 
 }

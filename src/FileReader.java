@@ -81,7 +81,6 @@ public class FileReader {
         //set up the first byte
         try {
             getNextByte();
-            //System.out.println("next byte from FR is " + currentByte);
         } catch (IOException e) {
             System.err.println("The file " + fileName + " has no bytes," +
                     " please try again");
@@ -200,7 +199,7 @@ public class FileReader {
             }
         }
         /*
-		 * otherwise, set the boolean to true, can get the next bit since we're in a byte which has more bits
+         * otherwise, set the boolean to true, can get the next bit since we're in a byte which has more bits
 		 * to be read
 		 */
         else {
@@ -233,13 +232,8 @@ public class FileReader {
             bit = getCurrentByte() >> currentPos;
             bit &= 0x1;
             currentPos++;
-
-            if (count % 8 ==0 )
-                System.out.println();
-            System.out.print(bit);
-            count++;
         }
-//        System.out.println(count++ + " " + bit);
+        count++;
         return bit;
     }
 
@@ -264,7 +258,7 @@ public class FileReader {
         boolean[] bits = toBinary(size, 32);
 
         for (int bit = 0; bit < 32; bit++) {
-            if (bits[bit] == true)
+            if (bits[bit])
                 sbits.add(1);
             else {
                 sbits.add(0);
@@ -293,25 +287,18 @@ public class FileReader {
         String extension = getExtension();
 
         try {
-            byte[] bytes = extension.getBytes("ASCII"); // 8-bit encoding ;
-            for (byte b : bytes)
-                System.out.println(b);
-            System.out.println(bytes.length);
+            byte[] bytes = extension.getBytes("UTF-8");
             // convert to bits  8x8 = 64 bits
             boolean[] bits = byteArray2BitArray(bytes);
             if (bits.length > 64) {
-                System.out.println("the extension is too big to fit in a 64 bit array");
-                return;
-
+                throw new IllegalArgumentException("the extension is too big to fit in a 64 bit array");
             }
             //populate the array
-            extBits=new ArrayList<Integer>(Collections.nCopies(64, 0));
+            extBits = new ArrayList<Integer>(Collections.nCopies(64, 0));
             for (int bit = 0; bit < bits.length; bit++) {
-                if (bits[bit] == true)
+                if (bits[bit])
                     extBits.set(64 - bits.length + bit, 1);
             }
-            //System.out.println(extBits.toString());
-
             extBitsIt = extBits.iterator();
         } catch (UnsupportedEncodingException e) {
 
