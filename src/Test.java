@@ -65,7 +65,7 @@ public class Test {
                     String stegoFile = st.hideFile(fileOrStringToEncode , fileToUse);
                     String outputFile =	st.extractFile(stegoFile);
                     
-                    File file1 = new File(fileToUse);
+                    File file1 = new File(fileOrStringToEncode);
                     File file2 = new File(outputFile);
                     
                     System.out.println("Encoding Result or file Name:  "+ stegoFile);
