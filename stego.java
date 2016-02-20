@@ -151,7 +151,16 @@ class Steg {
             byte[] imageBytes = getByteArrayFromBufferedImage(img);
 
             // instantiating fileReader that is going to read the file and returns its bits.
-            FileReader reader = new FileReader(file_payload);
+            FileReader reader;
+            try {
+                reader = new FileReader(file_payload);
+            }
+            catch (IllegalArgumentException e) {
+                return "Fail: " + e.getMessage();
+            }
+            catch (NullPointerException e) {
+                return "Fail: not such file";
+            }
             int nextBit;
             int i = imageDataBitsLenght;
             if (imageBytes.length < imageDataBitsLenght + reader.getFileSize() + extBitsLength + sizeBitsLength) {
@@ -198,6 +207,9 @@ class Steg {
                 for (; i < imageDataBitsLenght + sizeBitsLength; i++)
                     fileBitsSize = retrieveBitFromImage(imageBytes, fileBitsSize, i);
 
+                if ((fileBitsSize+sizeBitsLength+extBitsLength) > (imageBytes.length-imageDataBitsLenght)) {
+                    return "Fail: canno decode file with file size bigger than the number of bytes in the image.";
+                }
                 //get the extension of the file
                 byte[] extensionArr = new byte[extBitsLength / byteLength];
                 for (int j = 0; i < imageDataBitsLenght + sizeBitsLength + extBitsLength; j++) {
