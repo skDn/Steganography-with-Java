@@ -4,8 +4,12 @@
 .idea
 *.iml
 out/
+src/
+decodedFileForm.*
+*-modified.bmp
 
 
 .project
 .classpath
+*.class
 
