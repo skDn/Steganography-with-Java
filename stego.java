@@ -155,12 +155,10 @@ class Steg {
             try {
                 reader = new FileReader(file_payload);
             }
-            catch (IllegalArgumentException e) {
+            catch (Exception e) {
                 return "Fail: " + e.getMessage();
             }
-            catch (NullPointerException e) {
-                return "Fail: not such file";
-            }
+
             int nextBit;
             int i = imageDataBitsLenght;
             if (imageBytes.length < imageDataBitsLenght + reader.getFileSize() + extBitsLength + sizeBitsLength) {
