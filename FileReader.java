@@ -1,4 +1,4 @@
-// package src;
+//package src;
 import java.io.*;
 import java.util.*;
 
@@ -254,10 +254,12 @@ public class FileReader {
      * 32 bits used to represent the size
      */
     private void populateSizeBits() {
+    	//convert the size value into 32 bit long bit array
         int size = getFileSize();
         sbits = new ArrayList<Integer>(32);
         boolean[] bits = toBinary(size, 32);
 
+        //fill the bits in the sizeBits Array
         for (int bit = 0; bit < 32; bit++) {
             if (bits[bit])
                 sbits.add(1);
@@ -269,6 +271,10 @@ public class FileReader {
 
     }
 
+    /**
+     * Convert the number to binary representation with base 32
+     * USAGE: when populating the SizeBits array
+     */
     private static boolean[] toBinary(int number, int base) {
         final boolean[] ret = new boolean[base];
         for (int i = 0; i < base; i++) {
@@ -284,24 +290,31 @@ public class FileReader {
      * 64 bits used to represent the extension
      */
     private void populateExtensionBits() {
-
+    	//get the extension sttring
         String extension = getExtension();
 
         try {
+        	//convert to byte array with "UTF-8" encoding
             byte[] bytes = extension.getBytes("UTF-8");
-            // convert to bits  8x8 = 64 bits
+            // convert to bits  lengts: bytes.lenght * 8
             boolean[] bits = byteArray2BitArray(bytes);
+            //
             if (bits.length > 64) {
                 throw new IllegalArgumentException("the extension is too big to fit in a 64 bit array");
             }
-            //populate the array
+            //populate initially  the array with zeroes 
             extBits = new ArrayList<Integer>(Collections.nCopies(64, 0));
+            //loop on the bits array
             for (int bit = 0; bit < bits.length; bit++) {
+            	//if '1' change the bit from 0 to 1
+            	//modify the extensionBits array in reversed order to cope wiht lengts,
+            	//less than 64
                 if (bits[bit])
                     extBits.set(64 - bits.length + bit, 1);
             }
             extBitsIt = extBits.iterator();
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
 
             e.printStackTrace();
         }
