@@ -274,6 +274,7 @@ public class FileReader {
     /**
      * Convert the number to binary representation with base 32
      * USAGE: when populating the SizeBits array
+     * @param int number[], int base
      */
     private static boolean[] toBinary(int number, int base) {
         final boolean[] ret = new boolean[base];
@@ -290,7 +291,7 @@ public class FileReader {
      * 64 bits used to represent the extension
      */
     private void populateExtensionBits() {
-    	//get the extension sttring
+    	//get the extension string
         String extension = getExtension();
 
         try {
@@ -320,9 +321,19 @@ public class FileReader {
         }
     }
 
+    /**
+     * Convert a byte array to a boolean array. Bit 0 is represented with false,
+     * Bit 1 is represented with 1
+     * 
+     * @param bytes byte[]
+     * @return boolean[]
+     */
     public static boolean[] byteArray2BitArray(byte[] bytes) {
+    	//init bits array with zeroes
         boolean[] bits = new boolean[bytes.length * 8];
+        //for each bit in the byte array
         for (int i = 0; i < bytes.length * 8; i++) {
+        	//go through each bit set remember the curent bit and modify if 1
             if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
                 bits[i] = true;
         }
