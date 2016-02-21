@@ -237,7 +237,7 @@ class Steg {
                     }
                     i += byteLength;
                 }
-                return writeDecodedFile(stego_image, decode, fileExtension);
+                return writeDecodedFile(stego_image, decode);
 
 
             } catch (UnsupportedEncodingException e) {
@@ -250,11 +250,11 @@ class Steg {
         }
     }
 
-    private String writeDecodedFile(String stego_image, byte[] decode, String fileExtension) throws IOException {
+    private String writeDecodedFile(String stego_image, byte[] decode) throws IOException {
         String fileName;// getting directory
         String current_dir = System.getProperty("user.dir");
 
-        fileName = "decodedFileFrom" + fileExtension;
+        fileName = "decodedFileFrom" + stego_image;
 
         // writing the output file.
         FileOutputStream fos = new FileOutputStream(current_dir + "/" + fileName);
